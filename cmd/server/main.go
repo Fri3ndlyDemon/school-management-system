@@ -1,27 +1,25 @@
 package main
 
 import (
-	"html/template"
 	"log"
-	"net/http"
+
+	"school-management-system/internal/config"
+	"school-management-system/internal/database"
 )
 
 func main() {
-	http.HandleFunc("/", homeHandler)
+	// load config from env
+	cfg := config.LoadConfig()
+	log.Printf("Configuration loaded successfully. Target address: %s", cfg.ServerAddress)
 
-	log.Println("Server starting on :8080")
-	err := http.ListenAndServe(":8080", nil)
+	// initialize connection to database
+	db, err := database.ConnectDB(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Critical error: Failed to connect to the database: %v", err)
 	}
-}
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-	tmpl.Execute(w, nil)
+	// close database when main exits
+	defer db.Close()
+
+	log.Println("School Management System initialized successfully!")
 }
