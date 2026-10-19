@@ -45,6 +45,26 @@ func main() {
 		tmpl.Execute(w, nil)
 	})
 
+	// server admin schedule page
+	mux.HandleFunc("/admin/schedule", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/admin/schedule.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})
+
+	// server admin leaves page
+	mux.HandleFunc("/admin/leaves", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/admin/leaves.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})
+
 	// API endpoints
 	mux.HandleFunc("/api/auth/register", authHandler.Register)
 	mux.HandleFunc("/api/auth/login", authHandler.Login)

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Master Schedule Configuration</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #081628; margin: 0; padding: 20px; }
+        .container { max-width: 650px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .nav-link { display: block; text-align: center; margin-top: 15px; color: #007bff; text-decoration: none; }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Master Schedule Configuration</h2>
+        <form action="/api/admin/schedules" method="POST">
+            <div class="form-group">
+                <label for="course_id">Course ID</label>
+                <input type="number" id="course_id" name="course_id" required placeholder="e.g. 101">
+            </div>
+            <div class="form-group">
+                <label for="teacher_id">Primary Teacher ID</label>
+                <input type="number" id="teacher_id" name="teacher_id" required placeholder="e.g. 5">
+            </div>
+            <div class="form-group">
+                <label for="proxy_pool">Proxy Teacher IDs (comma-separated)</label>
+                <input type="text" id="proxy_pool" name="proxy_pool" placeholder="e.g. 12, 14, 19">
+            </div>
+            <div class="form-group">
+                <label for="day_of_week">Day of the Week</label>
+                <select id="day_of_week" name="day_of_week" required>
+                    <option value="" disabled selected>Select Day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="start_time">Start Time</label>
+                <input type="time" id="start_time" name="start_time" required>
+            </div>
+            <div class="form-group">
+                <label for="end_time">End Time</label>
+                <input type="time" id="end_time" name="end_time" required>
+            </div>
+            <div class="form-group">
+                <label for="room">Room Number</label>
+                <input type="text" id="room" name="room" placeholder="e.g. Room 302">
+            </div>
+            <button type="submit">Save Schedule Routine</button>
+        </form>
+        <a href="/admin/onboarding" class="nav-link">Go to User Onboarding</a>
+    </div>
+</body>
+</html>

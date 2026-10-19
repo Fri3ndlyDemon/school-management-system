@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Teacher Leave Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #081628; margin: 0; padding: 20px; }
+        .container { max-width: 650px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #dc3545; border: none; color: white; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #c82333; }
+        .nav-link { display: block; text-align: center; margin-top: 15px; color: #007bff; text-decoration: none; }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Log Teacher Leave</h2>
+        <form action="/api/admin/leaves" method="POST">
+            <div class="form-group">
+                <label for="teacher_id">Teacher ID</label>
+                <input type="number" id="teacher_id" name="teacher_id" required placeholder="e.g. 5">
+            </div>
+            <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason / Notes</label>
+                <input type="text" id="reason" name="reason" placeholder="e.g. Medical leave">
+            </div>
+            <button type="submit">Submit Leave & Trigger Proxy Check</button>
+        </form>
+        <a href="/admin/schedule" class="nav-link">Go to Schedule Management</a>
+    </div>
+</body>
+</html>
