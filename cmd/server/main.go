@@ -25,9 +25,19 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Serve the login HTML page on GET /login
+	// show login page 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("internal/web/templates/auth/login.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})
+
+	// server admin onboarding
+	mux.HandleFunc("/admin/onboarding", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/admin/onboarding.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
