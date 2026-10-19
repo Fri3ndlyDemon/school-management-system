@@ -11,6 +11,7 @@ import (
 type Config struct {
 	ServerAddress string
 	DatabaseURL   string
+	JWTSecret     string
 }
 
 // load environment variables from .env otherwise system environment variables
@@ -21,16 +22,22 @@ func LoadConfig() *Config {
 
 	serverAddr := os.Getenv("SERVER_ADDRESS")
 	if serverAddr == "" {
-		serverAddr = ":8080"
+		log.Fatalf("SERVER_ADDRESS is not set in environment or .env file, terminating the application.")
 	}
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		log.Println("Warning: DATABASE_URL is not set in environment or .env file.")
+		log.Fatalf("DATABASE_URL is not set in environment or .env file, terminating the application.")
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatalf("JWT_SECRET is not set in environment or .env file, terminating the application.")
 	}
 
 	return &Config{
 		ServerAddress: serverAddr,
 		DatabaseURL:   dbURL,
+		JWTSecret:     jwtSecret,
 	}
 }
