@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 
@@ -10,29 +11,34 @@ import (
 )
 
 func main() {
-	// load config from env
 	cfg := config.LoadConfig()
 	log.Printf("Configuration loaded successfully. Target address: %s", cfg.ServerAddress)
 
-	// initialize connection to database
 	db, err := database.ConnectDB(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("Critical error: Failed to connect to the database: %v", err)
 	}
-	// close database when main exits
 	defer db.Close()
 
-	// initialize auth service and handler
 	authService := service.NewAuthService(cfg.JWTSecret)
 	authHandler := service.NewAuthHandler(authService)
 
 	mux := http.NewServeMux()
 
-	// public endpoints
+	// Serve the login HTML page on GET /login
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/auth/login.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})
+
+	// API endpoints
 	mux.HandleFunc("/api/auth/register", authHandler.Register)
 	mux.HandleFunc("/api/auth/login", authHandler.Login)
 
-	// start the http server
 	log.Printf("School Management System initialized successfully! Starting server on %s...", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, mux); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
