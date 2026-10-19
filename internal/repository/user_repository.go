@@ -13,7 +13,8 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-// CreateUser handles manual admin onboarding for students and teachers
+// CreateUser :
+//  handles manual admin onboarding for students and teachers
 func (r *UserRepository) CreateUser(user *models.User, hashedPassword string) error {
 	query := `
 		INSERT INTO users (name, email, password_hash, role, created_at)
