@@ -1,18 +1,19 @@
-package service
+package handler
 
 import (
 	"net/http"
 	"strconv"
 	"strings"
+	"school-management-system/internal/service"
 )
 
 type AdminHandler struct {
-	userService     *UserService
-	scheduleService *ScheduleService
-	proxyEngine     *ProxyEngine
+	userService     *service.UserService
+	scheduleService *service.ScheduleService
+	proxyEngine     *service.ProxyEngine
 }
 
-func NewAdminHandler(userService *UserService, scheduleService *ScheduleService, proxyEngine *ProxyEngine) *AdminHandler {
+func NewAdminHandler(userService *service.UserService, scheduleService *service.ScheduleService, proxyEngine *service.ProxyEngine) *AdminHandler {
 	return &AdminHandler{
 		userService:     userService,
 		scheduleService: scheduleService,

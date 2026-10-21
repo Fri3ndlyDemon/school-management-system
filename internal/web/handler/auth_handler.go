@@ -1,15 +1,16 @@
-package service
+package handler
 
 import (
 	"encoding/json"
 	"net/http"
+	"school-management-system/internal/service"
 )
 
 type AuthHandler struct {
-	AuthService *AuthService
+	AuthService *service.AuthService
 }
 
-func NewAuthHandler(authService *AuthService) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	return &AuthHandler{
 		AuthService: authService,
 	}
