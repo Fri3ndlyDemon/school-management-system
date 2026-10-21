@@ -16,7 +16,7 @@ func NewProxyEngine(db *sql.DB) *ProxyEngine {
 // ProcessTeacherLeave records leave and triggers proxy assignment
 func (p *ProxyEngine) ProcessTeacherLeave(teacherID int, startDate, endDate, reason string) error {
 	// TODO: Save leave record to database and invoke automated proxy allocation
-	fmt.Printf("Processing leave for Teacher ID %s from %s to %s. Reason: %s\n", teacherID, startDate, endDate, reason)
+	fmt.Printf("Processing leave for Teacher ID %d from %s to %s. Reason: %s\n", teacherID, startDate, endDate, reason)
 	return nil
 }
 
