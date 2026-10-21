@@ -7,6 +7,7 @@ import (
 
 	"school-management-system/internal/config"
 	"school-management-system/internal/database"
+	"school-management-system/internal/middleware" // Make sure this is imported
 	"school-management-system/internal/repository"
 	"school-management-system/internal/service"
 )
@@ -37,7 +38,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// --- UI Page Routes (GET) ---
+	// --- Public Routes ---
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("internal/web/templates/auth/login.html")
 		if err != nil {
@@ -47,39 +48,45 @@ func main() {
 		tmpl.Execute(w, nil)
 	})
 
-	mux.HandleFunc("/admin/onboarding", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/auth/register", authHandler.Register)
+	mux.HandleFunc("/api/auth/login", authHandler.Login)
+
+	// --- Protected Admin Routes (Requires "ADMIN" Role) ---
+
+	// 1. Admin Onboarding UI Page
+	mux.Handle("/admin/onboarding", middleware.RequireRole("ADMIN")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("internal/web/templates/admin/onboarding.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		tmpl.Execute(w, nil)
-	})
+	})))
 
-	mux.HandleFunc("/admin/schedule", func(w http.ResponseWriter, r *http.Request) {
+	// 2. Admin Schedule UI Page
+	mux.Handle("/admin/schedule", middleware.RequireRole("ADMIN")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("internal/web/templates/admin/schedule.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		tmpl.Execute(w, nil)
-	})
+	})))
 
-	mux.HandleFunc("/admin/leaves", func(w http.ResponseWriter, r *http.Request) {
+	// 3. Admin Leaves UI Page
+	mux.Handle("/admin/leaves", middleware.RequireRole("ADMIN")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("internal/web/templates/admin/leaves.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		tmpl.Execute(w, nil)
-	})
+	})))
 
-	// --- API & Form Submission Routes (POST) ---
-	mux.HandleFunc("/api/auth/register", authHandler.Register)
-	mux.HandleFunc("/api/auth/login", authHandler.Login)
-	mux.HandleFunc("/api/admin/onboarding", adminHandler.HandleOnboarding)
-	mux.HandleFunc("/api/admin/schedules", adminHandler.HandleScheduleCreation)
-	mux.HandleFunc("/api/admin/leaves", adminHandler.HandleLeaveSubmission)
+	// 4. Admin Form Submission Endpoints (POST)
+	mux.Handle("/api/admin/onboarding", middleware.RequireRole("ADMIN")(http.HandlerFunc(adminHandler.HandleOnboarding)))
+	mux.Handle("/api/admin/schedules", middleware.RequireRole("ADMIN")(http.HandlerFunc(adminHandler.HandleScheduleCreation)))
+	mux.Handle("/api/admin/leaves", middleware.RequireRole("ADMIN")(http.HandlerFunc(adminHandler.HandleLeaveSubmission)))
 
 	log.Printf("School Management System initialized successfully! Starting server on %s...", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, mux); err != nil {
