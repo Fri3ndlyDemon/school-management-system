@@ -7,9 +7,10 @@ import (
 
 	"school-management-system/internal/config"
 	"school-management-system/internal/database"
-	"school-management-system/internal/middleware" // Make sure this is imported
+	"school-management-system/internal/middleware"
 	"school-management-system/internal/repository"
 	"school-management-system/internal/service"
+	"school-management-system/internal/web/handler"
 )
 
 func main() {
@@ -28,13 +29,13 @@ func main() {
 
 	// Initialize Services & Engines
 	authService := service.NewAuthService(cfg.JWTSecret)
-	authHandler := service.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService)
 
 	userService := service.NewUserService(userRepo)
 	scheduleService := service.NewScheduleService(scheduleRepo)
 	proxyEngine := service.NewProxyEngine(db)
 
-	adminHandler := service.NewAdminHandler(userService, scheduleService, proxyEngine)
+	adminHandler := handler.NewAdminHandler(userService, scheduleService, proxyEngine)
 
 	mux := http.NewServeMux()
 
