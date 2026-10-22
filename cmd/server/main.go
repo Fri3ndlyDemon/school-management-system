@@ -26,8 +26,9 @@ func main() {
 	// Initialize Repositories
 	userRepo := repository.NewUserRepository(db)
 	scheduleRepo := repository.NewScheduleRepository(db)
+	teacherRepo := repository.NewTeacherRepository(db)
 
-	// Initialize Services & Engines
+	// Initialize Services
 	authService := service.NewAuthService(cfg.JWTSecret)
 	authHandler := handler.NewAuthHandler(authService)
 
@@ -35,7 +36,11 @@ func main() {
 	scheduleService := service.NewScheduleService(scheduleRepo)
 	proxyEngine := service.NewProxyEngine(db)
 
+	teacherService := service.NewTeacherService(teacherRepo)
+
+	//Initialize Handlers
 	adminHandler := handler.NewAdminHandler(userService, scheduleService, proxyEngine)
+	teacherHandler := handler.NewTeacherHandler(teacherService)
 
 	mux := http.NewServeMux()
 
@@ -84,6 +89,33 @@ func main() {
 		tmpl.Execute(w, nil)
 	})))
 
+	// --- Teacher Portal UI Pages (GET) ---
+	mux.Handle("/teacher/assignments", middleware.RequireRole("TEACHER", "ADMIN")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/teacher/assignments.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})))
+
+	mux.Handle("/teacher/attendance", middleware.RequireRole("TEACHER", "ADMIN")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("internal/web/templates/teacher/attendance.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
+	})))
+
+	// --- Teacher Form Submission Endpoints (POST) ---
+	// Note: Make sure you initialize teacherHandler with your TeacherService 
+	// and register these API endpoints to point to teacherHandler methods.
+	mux.Handle("/api/teacher/assignments", middleware.RequireRole("TEACHER", "ADMIN")(http.HandlerFunc(teacherHandler.HandleCreateAssignment)))
+	mux.Handle("/api/teacher/attendance", middleware.RequireRole("TEACHER", "ADMIN")(http.HandlerFunc(teacherHandler.HandleMarkAttendance)))
+
+
+	
 	// 4. Admin Form Submission Endpoints (POST)
 	mux.Handle("/api/admin/onboarding", middleware.RequireRole("ADMIN")(http.HandlerFunc(adminHandler.HandleOnboarding)))
 	mux.Handle("/api/admin/schedules", middleware.RequireRole("ADMIN")(http.HandlerFunc(adminHandler.HandleScheduleCreation)))
@@ -94,3 +126,4 @@ func main() {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
+
