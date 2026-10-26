@@ -31,3 +31,14 @@ func (r *UserRepository) CreateUser(user *models.User, hashedPassword string) er
 
 	return err
 }
+
+
+//GetByEmail : 
+// this looks up the email for entry
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
+	u := &models.User{}
+	err := r.db.QueryRow(
+		`SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = $1`, email,
+	).Scan(&u.ID, &u.Name, &u.Email, &u.PasswordHash, &u.Role, &u.CreatedAt)
+	return u, err
+}

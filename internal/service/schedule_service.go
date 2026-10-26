@@ -20,10 +20,15 @@ func (s *ScheduleService) SetMasterSchedule(courseID, teacherID int, proxyPool [
 		return errors.New("course ID and primary teacher ID are required")
 	}
 
+	var int32Pool []int32
+	for _, id := range proxyPool {
+		int32Pool = append(int32Pool, int32(id))
+	}
+
 	schedule := &models.Schedule{
 		CourseID:  courseID,
 		TeacherID: &teacherID,
-		ProxyPool: proxyPool,
+		ProxyPool: int32Pool,
 		DayOfWeek: dayOfWeek,
 		StartTime: startTime,
 		EndTime:   endTime,

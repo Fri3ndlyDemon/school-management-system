@@ -6,6 +6,8 @@ import (
 	"school-management-system/internal/repository"
 
 	"golang.org/x/crypto/bcrypt"
+
+	"database/sql"
 )
 
 type UserService struct {
@@ -37,4 +39,20 @@ func (s *UserService) OnboardUser(name, email, plainPassword, role string) error
 	}
 
 	return s.userRepo.CreateUser(user, string(hashedBytes))
+}
+
+var ErrInvalidCredentials = errors.New("invalid credentials")
+
+func (s *UserService) Authenticate(email, password string) (*models.User, error) {
+	u, err := s.userRepo.GetByEmail(email)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrInvalidCredentials
+	}
+	if err != nil {
+		return nil, err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
+		return nil, ErrInvalidCredentials
+	}
+	return u, nil
 }

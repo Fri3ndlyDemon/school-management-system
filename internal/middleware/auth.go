@@ -17,23 +17,26 @@ const UserContextKey contextKey = "userClaims"
 func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authHeader := r.Header.Get("Authorization")
-			if authHeader == "" {
-				http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+			tokenStr := ""
+
+			// Check Authorization header first
+			if h := r.Header.Get("Authorization"); strings.HasPrefix(h, "Bearer ") {
+				tokenStr = h[7:]
+			} else if c, err := r.Cookie("token"); err == nil {
+				// Fallback to cookie if header is missing
+				tokenStr = c.Value
+			}
+
+			// If no token is found anywhere, redirect to login
+			if tokenStr == "" {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
-			// extract token from bearer format
-			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-				http.Error(w, "Invalid authorization header format", http.StatusUnauthorized)
-				return
-			}
-
-			tokenStr := parts[1]
+			// Validate token and extract claims using your AuthService
 			claims, err := authService.ValidateJWT(tokenStr)
 			if err != nil {
-				http.Error(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
+				http.Error(w, "Unauthorized: Invalid or expired token", http.StatusUnauthorized)
 				return
 			}
 
