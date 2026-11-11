@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Portal - Chat Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #36393f; color: white; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: #2f3136; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h3 { color: #8e9297; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li a { color: #b9bbbe; text-decoration: none; display: block; padding: 10px; border-radius: 4px; margin-bottom: 5px; }
+        .sidebar li a.active, .sidebar li a:hover { background: #393c43; color: white; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; }
+        .chat-header { padding: 20px; background: #36393f; border-bottom: 1px solid #2f3136; font-size: 18px; font-weight: bold; }
+        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { background: #2f3136; padding: 10px 15px; border-radius: 6px; max-width: 80%; }
+        .message-author { font-weight: bold; color: #7289da; font-size: 14px; }
+        .message-time { font-size: 11px; color: #72767d; margin-left: 8px; }
+        .message-content { margin-top: 5px; font-size: 14px; color: #dcddde; }
+        .chat-form { padding: 20px; background: #40444b; display: flex; gap: 10px; }
+        .chat-form input { flex: 1; padding: 12px; border: none; border-radius: 4px; background: #2f3136; color: white; font-size: 14px; }
+        .chat-form button { padding: 12px 20px; background: #5865f2; border: none; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .chat-form button:hover { background: #4752c4; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Channels</h3>
+        <ul>
+            <li><a href="/student/dashboard?channel=general" {{if eq .ActiveChannel "general"}}class="active"{{end}}># general</a></li>
+            <li><a href="/student/dashboard?channel=official" {{if eq .ActiveChannel "official"}}class="active"{{end}}>📢 official announcements</a></li>
+            <li><a href="/student/dashboard?channel=updates" {{if eq .ActiveChannel "updates"}}class="active"{{end}}>📝 updates & notes</a></li>
+        </ul>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header"># {{if .ActiveChannel}}{{.ActiveChannel}}{{else}}general{{end}}</div>
+        <div class="messages">
+            {{range .Messages}}
+                <div class="message">
+                    <div>
+                        <span class="message-author">{{.AuthorName}} <small style="color: #faa61a;">({{.AuthorRole}})</small></span>
+                        <span class="message-time">{{.SentAt.Format "Jan 02, 15:04"}}</span>
+                    </div>
+                    <div class="message-content">{{.Content}}</div>
+                </div>
+            {{else}}
+                <p style="color: #72767d;">No messages yet. Be the first to speak!</p>
+            {{end}}
+        </div>
+        <form action="/api/student/messages" method="POST" class="chat-form">
+            <input type="hidden" name="channel" value="{{if .ActiveChannel}}{{.ActiveChannel}}{{else}}general{{end}}">
+            <input type="text" name="content" placeholder="Message" required autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -19,21 +19,21 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr := ""
 
-			// Check Authorization header first
+			// check authorization header first
 			if h := r.Header.Get("Authorization"); strings.HasPrefix(h, "Bearer ") {
 				tokenStr = h[7:]
 			} else if c, err := r.Cookie("token"); err == nil {
-				// Fallback to cookie if header is missing
+				// fallback to cookie if header is missing
 				tokenStr = c.Value
 			}
 
-			// If no token is found anywhere, redirect to login
+			// if no token is found anywhere, redirect to login
 			if tokenStr == "" {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
 
-			// Validate token and extract claims using your AuthService
+			// validate token and extract claims using your AuthService
 			claims, err := authService.ValidateJWT(tokenStr)
 			if err != nil {
 				http.Error(w, "Unauthorized: Invalid or expired token", http.StatusUnauthorized)

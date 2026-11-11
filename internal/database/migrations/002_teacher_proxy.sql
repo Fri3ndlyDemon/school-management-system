@@ -1,8 +1,8 @@
 ALTER TABLE schedules
-  ADD COLUMN teacher_id INT REFERENCES users(id) ON DELETE SET NULL,
-  ADD COLUMN proxy_pool INT[] NOT NULL DEFAULT '{}';
+  ADD COLUMN IF NOT EXISTS teacher_id INT REFERENCES users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS proxy_pool INT[] NOT NULL DEFAULT '{}';
 
-CREATE TABLE assignments (
+CREATE TABLE IF NOT EXISTS assignments (
   id SERIAL PRIMARY KEY,
   course_id INT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   teacher_id INT NOT NULL REFERENCES users(id),
@@ -12,7 +12,7 @@ CREATE TABLE assignments (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE attendance (
+CREATE TABLE IF NOT EXISTS attendance (
   id SERIAL PRIMARY KEY,
   course_id INT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -21,7 +21,7 @@ CREATE TABLE attendance (
   UNIQUE (course_id, student_id, date)
 );
 
-CREATE TABLE leaves (
+CREATE TABLE IF NOT EXISTS leaves (
   id SERIAL PRIMARY KEY,
   teacher_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE leaves (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE proxy_assignments (
+CREATE TABLE IF NOT EXISTS proxy_assignments (
   id SERIAL PRIMARY KEY,
   schedule_id INT NOT NULL REFERENCES schedules(id) ON DELETE CASCADE,
   date DATE NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE proxy_assignments (
   UNIQUE (schedule_id, date)
 );
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   message TEXT NOT NULL,

@@ -14,7 +14,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 // CreateUser :
-//  handles manual admin onboarding for students and teachers
+// handles manual admin onboarding for students and teachers
 func (r *UserRepository) CreateUser(user *models.User, hashedPassword string) error {
 	query := `
 		INSERT INTO users (name, email, password_hash, role, created_at)
@@ -32,8 +32,7 @@ func (r *UserRepository) CreateUser(user *models.User, hashedPassword string) er
 	return err
 }
 
-
-//GetByEmail : 
+// GetByEmail :
 // this looks up the email for entry
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	u := &models.User{}

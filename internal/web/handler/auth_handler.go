@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"school-management-system/internal/service"
+	"time"
 )
 
 type AuthHandler struct {
@@ -55,8 +56,11 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// save user to database - incomplete
-	_ = hashedPassword
+	err = h.AuthService.CreateUser(req.Name, req.Email, hashedPassword, req.Role)
+	if err != nil {
+		http.Error(w, "Failed to create user (email might already exist)", http.StatusBadRequest)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -70,28 +74,53 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+	var email, password string
+
+	if r.Header.Get("Content-Type") == "application/json" {
+		var req LoginRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+		email = req.Email
+		password = req.Password
+	} else {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+		email = r.FormValue("email")
+		password = r.FormValue("password")
 	}
 
-	// fetch user from database - incomplete
-	// dummy values
-	dummyUserID := 1
-	dummyRole := "student"
-	dummyHash := "$2a$10$..." // stored hash
-
-	// compare password with hash
-	if !h.AuthService.CheckPasswordHash(req.Password, dummyHash) {
+	user, err := h.AuthService.GetUserByEmail(email)
+	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	// generate jwt
-	token, err := h.AuthService.GenerateJWT(dummyUserID, dummyRole)
+	match := h.AuthService.CheckPasswordHash(password, user.PasswordHash)
+	if !match {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := h.AuthService.GenerateJWT(user.ID, user.Role)
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			HttpOnly: true,
+			Expires:  time.Now().Add(24 * time.Hour),
+		})
+
+		http.Redirect(w, r, "/student/channels", http.StatusSeeOther)
 		return
 	}
 

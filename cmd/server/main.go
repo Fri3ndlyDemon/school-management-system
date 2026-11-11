@@ -35,23 +35,28 @@ func main() {
 	}
 	defer db.Close()
 
+	database.RunMigrations(db, "internal/database/migrations")
+
 	// Initialize Repositories
 	userRepo := repository.NewUserRepository(db)
 	scheduleRepo := repository.NewScheduleRepository(db)
 	teacherRepo := repository.NewTeacherRepository(db)
+	studentRepo := repository.NewStudentRepository(db)
 
 	// Initialize Services
-	authService := service.NewAuthService(cfg.JWTSecret)
+	authService := service.NewAuthService(db, cfg.JWTSecret)
 	authHandler := handler.NewAuthHandler(authService)
 
 	userService := service.NewUserService(userRepo)
 	scheduleService := service.NewScheduleService(scheduleRepo)
 	proxyEngine := service.NewProxyEngine(db)
 	teacherService := service.NewTeacherService(teacherRepo)
+	studentService := service.NewStudentService(studentRepo)
 
 	// Initialize Handlers
 	adminHandler := handler.NewAdminHandler(userService, scheduleService, proxyEngine)
 	teacherHandler := handler.NewTeacherHandler(teacherService)
+	studentHandler := handler.NewStudentHandler(studentService)
 
 	// Setup Authentication and Route Guard Helpers
 	auth := middleware.AuthMiddleware(authService)
@@ -92,6 +97,10 @@ func main() {
 
 	mux.Handle("/api/teacher/assignments", guard(teacherHandler.HandleCreateAssignment, "teacher", "admin"))
 	mux.Handle("/api/teacher/attendance", guard(teacherHandler.HandleMarkAttendance, "teacher", "admin"))
+
+	// --- Protected Student Portal Routes ---
+	mux.Handle("/student/channels", guard(studentHandler.ChannelsView, "student", "teacher", "admin"))
+	mux.Handle("/api/student/messages", guard(studentHandler.PostMessage, "student", "teacher", "admin"))
 
 	log.Printf("School Management System initialized successfully! Starting server on %s...", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, mux); err != nil {
