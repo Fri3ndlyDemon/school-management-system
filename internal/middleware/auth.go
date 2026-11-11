@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"school-management-system/internal/service"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // custom type to avoid context key collisions
@@ -45,4 +47,9 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func GetClaims(ctx context.Context) (jwt.MapClaims, bool) {
+	claims, ok := ctx.Value(UserContextKey).(jwt.MapClaims)
+	return claims, ok
 }

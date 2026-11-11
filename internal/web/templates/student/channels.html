@@ -2,57 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Chat Channels</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student - Discussion Channels</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background-color: #36393f; color: white; display: flex; height: 100vh; }
-        .sidebar { width: 260px; background: #2f3136; padding: 20px; display: flex; flex-direction: column; }
-        .sidebar h3 { color: #8e9297; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; }
-        .sidebar ul { list-style: none; padding: 0; margin: 0; }
-        .sidebar li a { color: #b9bbbe; text-decoration: none; display: block; padding: 10px; border-radius: 4px; margin-bottom: 5px; }
-        .sidebar li a.active, .sidebar li a:hover { background: #393c43; color: white; }
-        .chat-container { flex: 1; display: flex; flex-direction: column; }
-        .chat-header { padding: 20px; background: #36393f; border-bottom: 1px solid #2f3136; font-size: 18px; font-weight: bold; }
-        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .message { background: #2f3136; padding: 10px 15px; border-radius: 6px; max-width: 80%; }
-        .message-author { font-weight: bold; color: #7289da; font-size: 14px; }
-        .message-time { font-size: 11px; color: #72767d; margin-left: 8px; }
-        .message-content { margin-top: 5px; font-size: 14px; color: #dcddde; }
-        .chat-form { padding: 20px; background: #40444b; display: flex; gap: 10px; }
-        .chat-form input { flex: 1; padding: 12px; border: none; border-radius: 4px; background: #2f3136; color: white; font-size: 14px; }
-        .chat-form button { padding: 12px 20px; background: #5865f2; border: none; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .chat-form button:hover { background: #4752c4; }
+        body { font-family: Arial, sans-serif; background-color: #081628; margin: 0; padding: 20px; }
+        .container { max-width: 750px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+        select, textarea, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled, textarea:disabled { background: #e2e8f0; color: #999; cursor: not-allowed; }
+        .chat-box { background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 15px; height: 250px; overflow-y: scroll; margin-bottom: 18px; }
+        .message { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .author { font-weight: bold; color: #007bff; font-size: 0.9rem; }
+        .role { font-size: 0.75rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #333; margin-left: 5px; }
+        .content { color: #333; margin-top: 4px; }
+        .notice { font-size: 0.85rem; color: #dc3545; margin-bottom: 8px; font-weight: bold; }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: #007bff; text-decoration: none; font-weight: bold; }
+        .nav-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h3>Channels</h3>
-        <ul>
-            <li><a href="/student/channels?channel=general" {{if eq .ActiveChannel "general"}}class="active"{{end}}># general</a></li>
-            <li><a href="/student/channels?channel=official" {{if eq .ActiveChannel "official"}}class="active"{{end}}>📢 official announcements</a></li>
-            <li><a href="/student/channels?channel=updates" {{if eq .ActiveChannel "updates"}}class="active"{{end}}>📝 updates & notes</a></li>
-        </ul>
-    </div>
+    <div class="container">
+        <h2>Discussion Channels</h2>
+        
+        <!-- Channel Switcher Form -->
+        <form method="GET" action="/student/channels">
+            <div class="form-group">
+                <label for="channel">Select Channel</label>
+                <select id="channel" name="channel" onchange="this.form.submit()">
+                    <option value="official" {{if eq .CurrentChannel "official"}}selected{{end}}>Official</option>
+                    <option value="updates" {{if eq .CurrentChannel "updates"}}selected{{end}}>Updates</option>
+                    <option value="general" {{if eq .CurrentChannel "general"}}selected{{end}}>General</option>
+                </select>
+            </div>
+        </form>
 
-    <div class="chat-container">
-        <div class="chat-header"># {{.ActiveChannel}}</div>
-        <div class="messages">
+        <!-- Message Feed -->
+        <div class="chat-box">
             {{range .Messages}}
                 <div class="message">
-                    <div>
-                        <span class="message-author">{{.AuthorName}} <small style="color: #faa61a;">({{.AuthorRole}})</small></span>
-                        <span class="message-time">{{.SentAt.Format "Jan 02, 15:04"}}</span>
-                    </div>
-                    <div class="message-content">{{.Content}}</div>
+                    <span class="author">{{.AuthorName}}</span><span class="role">{{.AuthorRole}}</span>
+                    <div class="content">{{.Content}}</div>
                 </div>
             {{else}}
-                <p style="color: #72767d;">No messages yet. Be the first to speak!</p>
+                <p style="color: #777; text-align: center;">No messages in this channel yet.</p>
             {{end}}
         </div>
-        <form action="/api/student/messages" method="POST" class="chat-form">
-            <input type="hidden" name="channel" value="{{.ActiveChannel}}">
-            <input type="text" name="content" placeholder="Message #{{.ActiveChannel}}" required autocomplete="off">
-            <button type="submit">Send</button>
+
+        <!-- Post Message Form -->
+        <form action="/api/student/messages" method="POST">
+            <input type="hidden" name="channel" value="{{.CurrentChannel}}">
+            <div class="form-group">
+                {{if eq .CurrentChannel "official"}}
+                    <div class="notice">Official channel is read-only for students.</div>
+                    <textarea name="content" rows="3" disabled placeholder="Only faculty and admins can post here..."></textarea>
+                {{else}}
+                    <textarea name="content" rows="3" required placeholder="Type your message here..."></textarea>
+                {{end}}
+            </div>
+            
+            {{if eq .CurrentChannel "official"}}
+                <button type="submit" disabled>Posting Restricted</button>
+            {{else}}
+                <button type="submit">Send Message</button>
+            {{end}}
         </form>
+
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
     </div>
 </body>
 </html>

@@ -1,0 +1,40 @@
+{{define "student-results-content"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student - Academic Results</title>
+</head>
+<body>
+    <div class="container">
+        <h2>My Exam Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Exam Title</th>
+                    <th>Score</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .ExamResults}}
+                <tr>
+                    <td>{{.CourseName}}</td>
+                    <td>{{.ExamTitle}}</td>
+                    <td>{{.Score}} / {{.MaxScore}}</td>
+                    <td><strong>{{.Grade}}</strong></td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #777;">No exam results recorded yet.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
+    </div>
+</body>
+</html>
+{{end}}

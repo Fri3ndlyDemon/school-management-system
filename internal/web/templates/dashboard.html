@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - School Management System</title>
+    <style>
+        :root {
+            --primary-bg: #081628;
+            --card-bg: #ffffff;
+            --nav-bg: #0d233a;
+            --accent: #007bff;
+            --accent-hover: #0056b3;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --danger: #dc3545;
+        }
+
+        body { font-family: Arial, sans-serif; background-color: var(--primary-bg); margin: 0; padding: 0; color: var(--text-main); }
+        
+        /* Top Navigation Bar */
+        .topnav { background-color: var(--nav-bg); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .topnav .brand { color: white; font-weight: bold; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .topnav-links { display: flex; gap: 15px; align-items: center; }
+        .topnav a { color: #cbd5e1; text-decoration: none; padding: 8px 14px; border-radius: 4px; font-size: 0.95rem; transition: background 0.2s, color 0.2s; cursor: pointer; }
+        .topnav a:hover, .topnav a.active { background-color: var(--accent); color: white; }
+        .topnav .logout-btn { color: #f87171; font-weight: bold; }
+        .topnav .logout-btn:hover { background-color: var(--danger); color: white; }
+
+        /* Main Content Container */
+        .main-container { max-width: 750px; margin: 40px auto; background: var(--card-bg); padding: 35px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        h2 { margin-top: 0; color: var(--text-main); text-align: center; }
+        h3 { color: #1e293b; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; }
+        p { color: var(--text-muted); text-align: center; margin-bottom: 25px; line-height: 1.6; }
+        
+        /* Dynamic Tab Content Panels */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Form elements */
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: var(--accent-hover); }
+
+        /* Action card for redirects/external views */
+        .action-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 6px; text-align: center; margin-top: 15px; }
+        .btn { display: inline-block; padding: 12px 24px; background: var(--accent); color: white; border-radius: 4px; text-decoration: none; font-weight: bold; margin-top: 10px; }
+        .btn:hover { background: var(--accent-hover); }
+
+        /* Tables for views */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; font-size: 0.95rem; color: var(--text-main); }
+        th { background-color: #f8fafc; font-weight: bold; }
+        .nav-link { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <div class="topnav">
+        <div class="brand">SMS Portal ({{.Role}})</div>
+        <div class="topnav-links">
+            {{if eq .Role "admin"}}
+                <a class="tab-link active" data-target="onboarding">Onboarding</a>
+                <a class="tab-link" data-target="schedule">Schedule</a>
+                <a class="tab-link" data-target="leaves">Leaves</a>
+                <a class="tab-link" data-target="announce">Announcements</a>
+            {{else if eq .Role "teacher"}}
+                <a class="tab-link active" data-target="assignments">Assignments</a>
+                <a class="tab-link" data-target="teacher-attendance">Attendance</a>
+            {{else if eq .Role "student"}}
+                <a class="tab-link active" data-target="channels">Chat Channels</a>
+                <a class="tab-link" data-target="results">Results</a>
+                <a class="tab-link" data-target="student-attendance">Attendance</a>
+                <a class="tab-link" data-target="calendar">Calendar</a>
+            {{end}}
+            <a href="/login" class="logout-btn">Log Out</a>
+        </div>
+    </div>
+
+    <!-- Client-Side Tab Switcher Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const links = document.querySelectorAll('.tab-link');
+            
+            links.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    
+                    const targetId = this.getAttribute('data-target');
+                    if (!targetId) return;
+
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+
+                    // Remove active style from all links
+                    links.forEach(l => l.classList.remove('active'));
+
+                    // Activate target tab & link
+                    const targetTab = document.getElementById(targetId);
+                    if (targetTab) {
+                        targetTab.classList.add('active');
+                    }
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+
+    <!-- Main Content Body -->
+    <div class="main-container">
+        <h2>Welcome back, {{.Name}}</h2>
+
+        <!-- ADMIN PANELS -->
+        {{if eq .Role "admin"}}
+            <div id="onboarding" class="tab-content active">
+                {{template "admin-onboarding-content" .}}
+            </div>
+            <div id="schedule" class="tab-content">
+                {{template "admin-schedule-content" .}}
+            </div>
+            <div id="leaves" class="tab-content">
+                {{template "admin-leaves-content" .}}
+            </div>
+            <div id="announce" class="tab-content">
+                {{template "admin-announce-content" .}}
+            </div>
+
+        <!-- TEACHER PANELS -->
+        {{else if eq .Role "teacher"}}
+            <div id="assignments" class="tab-content active">
+                {{template "teacher-assignments-content" .}}
+            </div>
+            <div id="teacher-attendance" class="tab-content">
+                {{template "teacher-attendance-content" .}}
+            </div>
+
+        <!-- STUDENT PANELS -->
+        {{else if eq .Role "student"}}
+            <div id="channels" class="tab-content active">
+                <div class="action-card">
+                    <h3>Discussion Chat Channels</h3>
+                    <p>Participate in general discussions, view official announcements, and check school updates.</p>
+                    <a href="/student/channels" class="btn">Open Discussion Channels</a>
+                </div>
+            </div>
+            <div id="results" class="tab-content">
+                {{template "student-results-content" .}}
+            </div>
+            <div id="student-attendance" class="tab-content">
+                {{template "student-attendance-content" .}}
+            </div>
+            <div id="calendar" class="tab-content">
+                {{template "student-calendar-content" .}}
+            </div>
+        {{end}}
+    </div>
+
+    <!-- Client-Side Tab Switcher Script -->
+    <script>
+        function switchTab(event, tabId) {
+            event.preventDefault();
+            
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active style from all navigation links
+            const links = document.querySelectorAll('.tab-link');
+            links.forEach(link => link.classList.remove('active'));
+
+            // Activate target content panel
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+
+            // Highlight clicked navigation button
+            if (event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

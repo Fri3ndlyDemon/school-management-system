@@ -1,0 +1,36 @@
+{{define "student-attendance-content"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student - Attendance History</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Attendance History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .AttendanceRecords}}
+                <tr>
+                    <td>{{.Date}}</td>
+                    <td>{{.Status}}</td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="2" style="text-align: center; color: #777;">No attendance records found.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
+    </div>
+</body>
+</html>
+{{end}}

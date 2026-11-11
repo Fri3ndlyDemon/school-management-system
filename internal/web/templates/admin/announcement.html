@@ -1,0 +1,24 @@
+{{define "admin-announce-content"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Post Official Announcement</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Broadcast Official Announcement</h2>
+
+        <form action="/api/admin/announce" method="POST">
+            <div class="form-group">
+                <label for="content">Announcement Message</label>
+                <textarea id="content" name="content" rows="5" required placeholder="Type the official announcement details here..."></textarea>
+            </div>
+            <button type="submit">Publish to Official Channel</button>
+        </form>
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
+    </div>
+</body>
+</html>
+{{end}}

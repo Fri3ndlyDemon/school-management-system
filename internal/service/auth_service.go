@@ -64,9 +64,10 @@ func (s *AuthService) CheckPasswordHash(password, hash string) bool {
 }
 
 // generate a single token with userid and role
-func (s *AuthService) GenerateJWT(userID int, role string) (string, error) {
+func (s *AuthService) GenerateJWT(userID int, name string, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
+		"name":    name,
 		"role":    role,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // 24 hour expiration
 	}

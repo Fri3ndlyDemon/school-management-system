@@ -35,6 +35,7 @@ func main() {
 	}
 	defer db.Close()
 
+	// run migrations
 	database.RunMigrations(db, "internal/database/migrations")
 
 	// Initialize Repositories
@@ -54,9 +55,10 @@ func main() {
 	studentService := service.NewStudentService(studentRepo)
 
 	// Initialize Handlers
-	adminHandler := handler.NewAdminHandler(userService, scheduleService, proxyEngine)
-	teacherHandler := handler.NewTeacherHandler(teacherService)
+	adminHandler := handler.NewAdminHandler(userService, scheduleService, proxyEngine, db)
+	teacherHandler := handler.NewTeacherHandler(teacherService, db)
 	studentHandler := handler.NewStudentHandler(studentService)
+	dashboardHandler := handler.NewDashboardHandler(userService)
 
 	// Setup Authentication and Route Guard Helpers
 	auth := middleware.AuthMiddleware(authService)
@@ -82,14 +84,16 @@ func main() {
 	mux.HandleFunc("/api/auth/register", authHandler.Register)
 	mux.HandleFunc("/api/auth/login", authHandler.Login)
 
-	// --- Protected Admin Routes ---
+	// --- Protected Admin Panel Routes ---
 	mux.Handle("/admin/onboarding", guard(page("admin/onboarding.html"), "admin"))
 	mux.Handle("/admin/schedule", guard(page("admin/schedule.html"), "admin"))
 	mux.Handle("/admin/leaves", guard(page("admin/leaves.html"), "admin"))
+	mux.Handle("/admin/announce", guard(page("admin/announcement.html"), "admin"))
 
 	mux.Handle("/api/admin/onboarding", guard(adminHandler.HandleOnboarding, "admin"))
 	mux.Handle("/api/admin/schedules", guard(adminHandler.HandleScheduleCreation, "admin"))
 	mux.Handle("/api/admin/leaves", guard(adminHandler.HandleLeaveSubmission, "admin"))
+	mux.Handle("/api/admin/announce", guard(adminHandler.PostAnnouncement, "admin"))
 
 	// --- Protected Teacher Portal Routes ---
 	mux.Handle("/teacher/assignments", guard(page("teacher/assignments.html"), "teacher", "admin"))
@@ -99,8 +103,16 @@ func main() {
 	mux.Handle("/api/teacher/attendance", guard(teacherHandler.HandleMarkAttendance, "teacher", "admin"))
 
 	// --- Protected Student Portal Routes ---
+	mux.Handle("/student/dashboard", guard(studentHandler.Dashboard, "student", "admin"))
 	mux.Handle("/student/channels", guard(studentHandler.ChannelsView, "student", "teacher", "admin"))
-	mux.Handle("/api/student/messages", guard(studentHandler.PostMessage, "student", "teacher", "admin"))
+	mux.Handle("/student/results", guard(page("student/results.html"), "student", "admin"))
+	mux.Handle("/student/attendance", guard(page("student/attendance.html"), "student", "admin"))
+	mux.Handle("/student/calendar", guard(page("student/calendar.html"), "student", "admin"))
+
+	mux.Handle("/student/channels/message", guard(studentHandler.PostMessage, "student", "teacher", "admin"))
+
+	// --- Unified Dashboard Route ---
+	mux.Handle("/dashboard", guard(dashboardHandler.RenderDashboard, "admin", "teacher", "student"))
 
 	log.Printf("School Management System initialized successfully! Starting server on %s...", cfg.ServerAddress)
 	if err := http.ListenAndServe(cfg.ServerAddress, mux); err != nil {

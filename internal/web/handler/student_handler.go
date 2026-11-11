@@ -17,6 +17,29 @@ func NewStudentHandler(studentService *service.StudentService) *StudentHandler {
 	return &StudentHandler{studentService: studentService}
 }
 
+// render the student dashboard with all relevant data
+func (h *StudentHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(middleware.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	studentID := int(claims["user_id"].(float64))
+
+	data, err := h.studentService.GetDashboardBundle(studentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("internal/web/templates/student/dashboard.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, data)
+}
+
 // render the chat channels view for students
 func (h *StudentHandler) ChannelsView(w http.ResponseWriter, r *http.Request) {
 	channel := r.URL.Query().Get("channel")
@@ -31,8 +54,8 @@ func (h *StudentHandler) ChannelsView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"ActiveChannel": channel,
-		"Messages":      messages,
+		"CurrentChannel": channel,
+		"Messages":       messages,
 	}
 
 	tmpl, err := template.ParseFiles("internal/web/templates/student/channels.html")

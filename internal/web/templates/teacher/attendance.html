@@ -1,41 +1,45 @@
+{{define "teacher-attendance-content"}}
 <!DOCTYPE html>
 <html lang="en">
-<script src="/static/js/attendance.js"></script>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Portal - Mark Attendance</title>
-    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="container">
         <h2>Student Attendance Management</h2>
 
-        <form action="/api/teacher/attendance" method="POST">
+        <form id="attendance-form" action="/api/teacher/attendance" method="POST">
             <div class="form-group">
-                <label for="course_id">Course ID:</label>
-                <input type="number" id="course_id" name="course_id" required>
+                <label for="course_id">Course ID</label>
+                <input type="number" id="course_id" name="course_id" required placeholder="e.g. 101">
             </div>
 
             <div class="form-group">
-                <label for="student_id">Student ID:</label>
-                <input type="number" id="student_id" name="student_id" required>
+                <label for="student_id">Student ID</label>
+                <input type="number" id="student_id" name="student_id" required placeholder="e.g. 42">
             </div>
 
             <div class="form-group">
-                <label for="date">Date:</label>
+                <label for="date">Date</label>
                 <input type="date" id="date" name="date" required>
             </div>
 
             <div class="form-group">
-                <label for="status">Attendance Status:</label>
+                <label for="status">Attendance Status</label>
                 <select id="status" name="status" required>
+                    <option value="" disabled selected>Select Status</option>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
                 </select>
             </div>
 
-            <button type="submit" class="btn">Submit Attendance</button>
+            <button type="submit">Submit Attendance</button>
         </form>
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
     </div>
+    <script src="/static/js/attendance.js"></script>
 </body>
 </html>
+{{end}}

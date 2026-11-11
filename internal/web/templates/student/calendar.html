@@ -1,0 +1,47 @@
+{{define "student-calendar-content"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student - Academic Calendar & Schedules</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Academic Calendar & Routine</h2>
+
+        <h3>Class Schedules</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Schedules}}
+                <tr>
+                    <td>{{.DayOfWeek}}</td>
+                    <td>{{.StartTime}} - {{.EndTime}}</td>
+                    <td>{{.Room}}</td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #777;">No active schedules assigned.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <h3>Institutional Timeline</h3>
+        <ul style="padding-left: 20px; color: #555; line-height: 1.8;">
+            <li><strong>Midterm Examinations:</strong> Mid-November</li>
+            <li><strong>Final Submissions:</strong> End of December</li>
+        </ul>
+
+        <a href="/dashboard" class="nav-link">Go back to dashboard</a>
+    </div>
+</body>
+</html>
+{{end}}

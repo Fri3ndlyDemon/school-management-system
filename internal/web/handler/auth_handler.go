@@ -105,7 +105,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.AuthService.GenerateJWT(user.ID, user.Role)
+	token, err := h.AuthService.GenerateJWT(user.ID, user.Name, user.Role)
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return
@@ -120,7 +120,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 			Expires:  time.Now().Add(24 * time.Hour),
 		})
 
-		http.Redirect(w, r, "/student/channels", http.StatusSeeOther)
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 		return
 	}
 

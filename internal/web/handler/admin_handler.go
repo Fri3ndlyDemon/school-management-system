@@ -1,23 +1,29 @@
 package handler
 
 import (
+	"database/sql"
 	"net/http"
+	"school-management-system/internal/middleware"
+	"school-management-system/internal/service"
 	"strconv"
 	"strings"
-	"school-management-system/internal/service"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AdminHandler struct {
 	userService     *service.UserService
 	scheduleService *service.ScheduleService
 	proxyEngine     *service.ProxyEngine
+	db              *sql.DB
 }
 
-func NewAdminHandler(userService *service.UserService, scheduleService *service.ScheduleService, proxyEngine *service.ProxyEngine) *AdminHandler {
+func NewAdminHandler(userService *service.UserService, scheduleService *service.ScheduleService, proxyEngine *service.ProxyEngine, db *sql.DB) *AdminHandler {
 	return &AdminHandler{
 		userService:     userService,
 		scheduleService: scheduleService,
 		proxyEngine:     proxyEngine,
+		db:              db,
 	}
 }
 
@@ -40,7 +46,7 @@ func (h *AdminHandler) HandleOnboarding(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	http.Redirect(w, r, "/admin/onboarding?success=true", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 // Handle Master Schedule Form Submission (calls SetMasterSchedule)
@@ -76,7 +82,7 @@ func (h *AdminHandler) HandleScheduleCreation(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	http.Redirect(w, r, "/admin/schedule?success=true", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 // Handle Leave Submission & Trigger Proxy Engine
@@ -98,5 +104,35 @@ func (h *AdminHandler) HandleLeaveSubmission(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, "/admin/leaves?success=true", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
+
+func (h *AdminHandler) PostAnnouncement(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	claims, ok := r.Context().Value(middleware.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	adminID := int(claims["user_id"].(float64))
+
+	content := r.FormValue("content")
+	if content == "" {
+		http.Error(w, "Announcement content cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	// Save announcement straight into chat_messages under the official channel
+	query := `INSERT INTO chat_messages (channel, author_id, content) VALUES ('official', $1, $2)`
+	_, err := h.db.Exec(query, adminID, content)
+	if err != nil {
+		http.Error(w, "Failed to publish announcement", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
